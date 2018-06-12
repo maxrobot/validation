@@ -1,5 +1,7 @@
-# PoA Network
-This repo allows you to set up a "proof of authority" ethereum blockchain with two separate peers who both engage in the sealing of blocks. The instructions are based on the tutorial of [Salanfe](https://hackernoon.com/setup-your-own-private-proof-of-authority-ethereum-network-with-geth-9a0a3750cda8) but has the more complicated parts already initialised.
+# Clique Block Verification
+This repo allows you to set up a "Clique" proof of authority Ethereum blockchain with two separate peers who both engage in the sealing of blocks. The instructions are based on the tutorial of [Salanfe](https://hackernoon.com/setup-your-own-private-proof-of-authority-ethereum-network-with-geth-9a0a3750cda8) but has the more complicated parts already initialised.
+
+Once the network has been launched the tests validate that the blocks have been signed by a known validator.
 
 ## Launch the Network
 In order to run the network first install an instance of [geth](https://geth.ethereum.org/downloads/) the directory structure and accounts have been set up a priori. Hence all that is required to launch the network is to follow these instructions:
@@ -37,5 +39,8 @@ $ geth attach node2/geth.ipc
 ```
 Notice that IPC has been used to attach to the nodes, this allows the clique module to be used.
 
-
 ## Test
+After launching the network:
+```
+$ truffle test
+```

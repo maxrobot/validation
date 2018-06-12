@@ -35,7 +35,7 @@ contract('signatures.js', (accounts) => {
     const recover = await Recover.new();
     const getOwnerReceipt = await recover.GetOwner();
 
-    const coinbase = accounts[0];
+    const signer = accounts[0];
 
     const hashData = Web3Utils.sha3("Test Data");
 
@@ -46,26 +46,27 @@ contract('signatures.js', (accounts) => {
     assert.equal(coinbase, ecrecoveryExpected);
   })
 
-  it.only('test web3', async () => {
+  it.only('Test: Validate Block Signature', async () => {
     const recover = await Recover.new();
     const accounts = web3.eth.accounts;
+    const signer = accounts[0];
 
     // Get a single block
-    const block = web3.eth.getBlock(12);
+    const block = web3.eth.getBlock(10);
 
     // Decompose the values in the block to hash
     const parentHash = block.parentHash;
     const sha3Uncles = block.sha3Uncles;
-    const coinbase = accounts[0]
+    const coinbase = block.miner;
     const root = block.stateRoot;
     const txHash = block.transactionsRoot;
     const receiptHash = block.receiptsRoot;
     const logsBloom = block.logsBloom;
-    const difficulty = block.difficulty;
-    const number = block.number;
+    const difficulty = Web3Utils.toBN(block.difficulty);
+    const number = Web3Utils.toBN(block.number);
     const gasLimit = block.gasLimit;
     const gasUsed = block.gasUsed;
-    const timestamp = block.timestamp;
+    const timestamp = Web3Utils.toBN(block.timestamp);
     const extraData = block.extraData;
     const mixHash = block.mixHash;
     const nonce = block.nonce;
@@ -77,19 +78,29 @@ contract('signatures.js', (accounts) => {
     const extraDataShort = '0x' + bytesToHex(extraBytesShort);
 
     const header = [
-      parentHash
+      parentHash,
+      sha3Uncles,
+      coinbase,
+      root,
+      txHash,
+      receiptHash,
+      logsBloom,
+      difficulty,
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      extraDataShort,
+      mixHash,
+      nonce
     ];
 
-    // const mergedHeader = joinHex(header);
     const encodedHeader = rlp.encode(header);
 
     const headerHash = Web3Utils.sha3(encodedHeader);
-    console.log(headerHash)
-
-    const sig = web3.eth.sign(coinbase, headerHash)
 
     const ecrecoveryReceipt = await recover.VerifyData(headerHash, extraDataSignature);
     const ecrecoveryExpected = ecrecoveryReceipt.logs[0].args['owner'];
-    assert.equal(coinbase, ecrecoveryExpected);
+    assert.equal(ecrecoveryExpected, signer);
   })
 });
