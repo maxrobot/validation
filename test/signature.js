@@ -31,22 +31,23 @@ function bytesToHex(bytes) {
 contract('signatures.js', (accounts) => {
   const joinHex = arr => '0x' + arr.map(el => el.slice(2)).join('')
 
-  it('Test: Recover', async () => {
-    const recover = await Recover.new();
-    const getOwnerReceipt = await recover.GetOwner();
+  // This won't work because the ECVerify contract is not appending the ethereum message
+  // it('Test: Recover', async () => {
+  //   const recover = await Recover.new();
+  //   // const getOwnerReceipt = await recover.GetOwner();
+  //
+  //   const signer = accounts[0];
+  //
+  //   const hashData = Web3Utils.sha3("Test Data");
+  //
+  //   const sig = web3.eth.sign(signer, hashData);
+  //
+  //   const ecrecoveryReceipt = await recover.VerifyHash(hashData, sig);
+  //   const ecrecoveryExpected = ecrecoveryReceipt.logs[0].args['owner'];
+  //   assert.equal(ecrecoveryExpected, signer);
+  // })
 
-    const signer = accounts[0];
-
-    const hashData = Web3Utils.sha3("Test Data");
-
-    const sig = web3.eth.sign(coinbase, hashData);
-
-    const ecrecoveryReceipt = await recover.VerifyData(hashData, sig);
-    const ecrecoveryExpected = ecrecoveryReceipt.logs[0].args['owner'];
-    assert.equal(coinbase, ecrecoveryExpected);
-  })
-
-  it.only('Test: Validate Block Signature', async () => {
+  it('Test: VerifyHash()', async () => {
     const recover = await Recover.new();
     const accounts = web3.eth.accounts;
     const signer = accounts[0];
@@ -99,8 +100,69 @@ contract('signatures.js', (accounts) => {
 
     const headerHash = Web3Utils.sha3(encodedHeader);
 
-    const ecrecoveryReceipt = await recover.VerifyData(headerHash, extraDataSignature);
+    const ecrecoveryReceipt = await recover.VerifyHash(headerHash, extraDataSignature);
     const ecrecoveryExpected = ecrecoveryReceipt.logs[0].args['owner'];
+    assert.equal(ecrecoveryExpected, signer);
+  })
+
+  it('Test: VerifyBlock()', async () => {
+    const recover = await Recover.new();
+    const accounts = web3.eth.accounts;
+    const signer = accounts[0];
+
+    // Get a single block
+    const block = web3.eth.getBlock(10);
+
+    // Decompose the values in the block to hash
+    const parentHash = block.parentHash;
+    const sha3Uncles = block.sha3Uncles;
+    const coinbase = block.miner;
+    const root = block.stateRoot;
+    const txHash = block.transactionsRoot;
+    const receiptHash = block.receiptsRoot;
+    const logsBloom = block.logsBloom;
+    const difficulty = Web3Utils.toBN(block.difficulty);
+    const number = Web3Utils.toBN(block.number);
+    const gasLimit = block.gasLimit;
+    const gasUsed = block.gasUsed;
+    const timestamp = Web3Utils.toBN(block.timestamp);
+    const extraData = block.extraData;
+    const mixHash = block.mixHash;
+    const nonce = block.nonce;
+
+    // Remove last 65 Bytes of extraData
+    const extraBytes = hexToBytes(extraData);
+    const extraBytesShort = extraBytes.splice(1, extraBytes.length-66);
+    const extraDataSignature = '0x' + bytesToHex(extraBytes.splice(extraBytes.length-65));
+    const extraDataShort = '0x' + bytesToHex(extraBytesShort);
+
+    const header = [
+      parentHash,
+      sha3Uncles,
+      coinbase,
+      root,
+      txHash,
+      receiptHash,
+      logsBloom,
+      difficulty,
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      extraDataShort,
+      mixHash,
+      nonce
+    ];
+
+    const encodedHeader = '0x' + rlp.encode(header).toString('hex');
+    const headerHash = Web3Utils.sha3(encodedHeader);
+
+    const ecrecoveryReceipt = await recover.VerifyBlock(encodedHeader, extraDataSignature);
+    const recoveredParentHash = ecrecoveryReceipt.logs[0].args['parentHash']
+    const recoveredRootHash = ecrecoveryReceipt.logs[0].args['rootHash']
+    const ecrecoveryExpected = ecrecoveryReceipt.logs[1].args['owner'];
+    assert.equal(recoveredParentHash, parentHash);
+    assert.equal(recoveredRootHash, root);
     assert.equal(ecrecoveryExpected, signer);
   })
 });
