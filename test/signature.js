@@ -294,20 +294,10 @@ contract('signatures.js', (accounts) => {
     const prefixHeader = '0x0214';
     const prefixExtraData = '0xa0';
 
-    const ecrecoveryReceipt = await recover.ExtractHash(encodedBlockHeader, encodedHeader, prefixHeader, prefixExtraData);
+    const ecrecoveryReceipt = await recover.ExtractHash(encodedBlockHeader, prefixHeader, prefixExtraData);
     const recoveredBlockHash = ecrecoveryReceipt.logs[0].args['blockHash'];
+    const recoveredSignature = ecrecoveryReceipt.logs[1].args['owner'];
     assert.equal(block.hash, recoveredBlockHash)
-    console.log(encodedHeader);
-    console.log(ecrecoveryReceipt.logs[1].args['header']);
-    console.log(ecrecoveryReceipt.logs[2].args['header']);
-    // console.log(ecrecoveryReceipt.logs[2].args['header']);
-    // console.log(ecrecoveryReceipt.logs[3].args['header']);
-    // console.log(headerHash);
-    // console.log(ecrecoveryReceipt.logs[1].args['blockHash']);
-    // console.log(signer);
-    // console.log(ecrecoveryReceipt.logs[2].args['owner']);
-    // assert.equal(recoveredParentHash, parentHash);
-    // assert.equal(recoveredRootHash, root);
-    // assert.equal(ecrecoveryExpected, signer);
+    assert.equal(recoveredSignature, signer);
   })
 });
