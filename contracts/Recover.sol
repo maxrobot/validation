@@ -3,13 +3,12 @@
 pragma solidity ^0.4.23;
 
 import "./ECVerify.sol";
-import "./Memory.sol";
 
 contract Recover {
 	address Owner;
 
 	event broadcastSig(address owner);
-	event extraData(bytes header, bytes parentHash, bytes rootHash);
+	event broadcastHashData(bytes header, bytes parentHash, bytes rootHash);
 	/* event test(bytes start, bytes data); */
 	event broadcastHash(bytes32 blockHash);
 	event test(bytes header);
@@ -43,21 +42,22 @@ contract Recover {
 		extractData(parentHash, header, 4, 32);
 		extractData(rootHash, header, 91, 32);
 
-		emit extraData(header, parentHash, rootHash);
+		emit broadcastHashData(header, parentHash, rootHash);
 		emit broadcastSig(sig_addr);
 	}
 
 	/*
 	* @param header  			header rlp encoded, with extraData signatures removed
 	*/
-	function ExtractHash(bytes header, bytes headerTest, bytes prefixHeader, bytes prefixExtraData) public {
+	function ExtractHash(bytes header, bytes prefixHeader, bytes prefixExtraData) public {
 		uint256 length = header.length;
 		bytes32 blockHash = keccak256(header);
+
 		emit broadcastHash(blockHash);
 
 		bytes memory headerStart 	= new bytes(length - 141);
 		bytes memory extraData 		= new bytes(31);
-		bytes memory extraDataSig 	= new bytes(65);
+		bytes memory extraDataSig	= new bytes(65);
 		bytes memory headerEnd 		= new bytes(42);
 
 		// Extract the start of the header and replace the length
@@ -71,25 +71,23 @@ contract Recover {
 		assembly {
 					 let ret := staticcall(3000, 4, add(prefixExtraData, 32), 1, add(extraData, 32), 1)
 		}
+
+		// Extract the end of the header
 		extractData(headerEnd, header, length-42, headerEnd.length);
-
 		bytes memory newHeader = mergeHash(headerStart, extraData, headerEnd);
-		emit test(newHeader);
 
-		/* bytes32 hashData = keccak256(headerStart, prefixExtraData, extraData, headerEnd); */
-		/* bytes32 hashData = keccak256(headerTest);
-		emit broadcastHash(hashData);
+		bytes32 hashData = keccak256(newHeader);
 
 		// Extract the signature of the hash create above
 		extractData(extraDataSig, header, length-107, extraDataSig.length);
 
 		address sig_addr = ECVerify.ecrecovery(hashData, extraDataSig);
 
-		emit broadcastSig(sig_addr); */
+		emit broadcastSig(sig_addr);
 
 	}
 
-	function mergeHash(bytes headerStart, bytes extraData, bytes headerEnd) internal returns (bytes output) {
+	function mergeHash(bytes headerStart, bytes extraData, bytes headerEnd) internal view returns (bytes output) {
 		// Get the lengths sorted because they're needed later...
 		uint256 headerStartLength = headerStart.length;
 		uint256 extraDataLength = extraData.length;
@@ -111,7 +109,6 @@ contract Recover {
 			let ret := staticcall(3000, 4, add(headerEnd, 32), headerEndLength, add(header, headerEndStart), headerEndLength)
 		}
 
-		emit test(header);
 		output = header;
 	}
 
@@ -125,21 +122,6 @@ contract Recover {
 		for (uint i=0; i<length; i++) {
 			data[i] = input[start+i];
 		}
-	}
-
-	// Combines 'self' and 'other' into a single array.
-	// Returns the concatenated arrays:
-	//  [self[0], self[1], ... , self[self.length - 1], other[0], other[1], ... , other[other.length - 1]]
-	// The length of the new array is 'self.length + other.length'
-	function concat(bytes memory self, bytes memory other) internal pure returns (bytes memory) {
-		bytes memory ret = new bytes(self.length + other.length);
-		var (src, srcLen) = Memory.fromBytes(self);
-		var (src2, src2Len) = Memory.fromBytes(other);
-		var (dest,) = Memory.fromBytes(ret);
-		var dest2 = dest + src2Len;
-		Memory.copy(src, dest, srcLen);
-		Memory.copy(src2, dest2, src2Len);
-		return ret;
 	}
 
 }
