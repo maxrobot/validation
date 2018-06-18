@@ -18,7 +18,9 @@ func main() {
 
 	if *configFile != "" {
 		setup := config.Read(*configFile)
-		cli.Launch()
+
+		// Launch the CLI
+		cli.Launch(setup)
 	} else {
 		fmt.Print("Error: empty config!\n")
 		os.Exit(3)

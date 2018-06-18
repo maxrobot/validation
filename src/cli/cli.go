@@ -4,13 +4,21 @@ package cli
 
 import (
 	// "strings"
+	"fmt"
+	"log"
+	"strconv"
 
 	"github.com/abiosoft/ishell"
-	// "gitlab.clearmatics.net/dev/boe-poc/src/api"
-	// "gitlab.clearmatics.net/dev/boe-poc/src/config"
+	"github.com/ethereum/go-ethereum/rpc"
+
+	"github.com/validation/src/config"
 )
 
-func Launch() {
+type Block struct {
+    Number string
+}
+
+func Launch(setup config.Setup) {
 	// by default, new shell includes 'exit', 'help' and 'clear' commands.
 	shell := ishell.New()
 
@@ -24,11 +32,24 @@ func Launch() {
 		Func: func(c *ishell.Context) {
 			c.Println("===============================================================")
 			c.Println("Get block:")
-			if len(c.Args) > 1 {
-				c.Println("Too many arguments entered.")
-			} else {
-				c.Println(c.Args[0])
+
+			// Connect the client
+		  client, err := rpc.Dial("http://" + setup.Addr_to + ":" + setup.Port_to)
+		  if err != nil {
+		    log.Fatalf("could not create ipc client: %v", err)
+		  }
+
+			var lastBlock Block
+		  err = client.Call(&lastBlock, "eth_getBlockByNumber", "latest", true)
+		  if err != nil {
+		      fmt.Println("can't get latest block:", err)
+		      return
+		  } else {
+				// Print events from the subscription as they arrive.
+				k, _ := strconv.ParseInt(lastBlock.Number, 0, 64)
+			  fmt.Printf("latest block: %v\n", k)
 			}
+
 			c.Println("===============================================================")
 		},
 	})
