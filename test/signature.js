@@ -31,22 +31,6 @@ function bytesToHex(bytes) {
 contract('signatures.js', (accounts) => {
   const joinHex = arr => '0x' + arr.map(el => el.slice(2)).join('')
 
-  // This won't work because the ECVerify contract is not appending the ethereum message
-  // it('Test: Recover', async () => {
-  //   const recover = await Recover.new();
-  //   // const getOwnerReceipt = await recover.GetOwner();
-  //
-  //   const signer = accounts[0];
-  //
-  //   const hashData = Web3Utils.sha3("Test Data");
-  //
-  //   const sig = web3.eth.sign(signer, hashData);
-  //
-  //   const ecrecoveryReceipt = await recover.VerifyHash(hashData, sig);
-  //   const ecrecoveryExpected = ecrecoveryReceipt.logs[0].args['owner'];
-  //   assert.equal(ecrecoveryExpected, signer);
-  // })
-
   it('Test: VerifyBlockHash()', async () => {
     const recover = await Recover.new();
     const accounts = web3.eth.accounts;
@@ -103,11 +87,10 @@ contract('signatures.js', (accounts) => {
 
     // Get a single block
     const block = web3.eth.getBlock(10);
-    console.log(block);
 
     // Decompose the values in the block to hash
     const parentHash = block.parentHash;
-    const sha3Uncles = block.sha3Uncles;difficulty
+    const sha3Uncles = block.sha3Uncles;
     const coinbase = block.miner;
     const root = block.stateRoot;
     const txHash = block.transactionsRoot;
@@ -201,7 +184,7 @@ contract('signatures.js', (accounts) => {
       timestamp,
       extraDataShort,
       mixHash,
-      nonceblockH
+      nonce
     ];
 
     const encodedHeader = '0x' + rlp.encode(header).toString('hex');
@@ -216,7 +199,7 @@ contract('signatures.js', (accounts) => {
     assert.equal(ecrecoveryExpected, signer);
   })
 
-  it.only('Test: ExtractSignature()', async () => {
+  it('Test: ExtractSignature()', async () => {
     const recover = await Recover.new();
     const accounts = web3.eth.accounts;
     const signer = accounts[0];

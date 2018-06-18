@@ -47,7 +47,9 @@ contract Recover {
 	}
 
 	/*
-	* @param header  			header rlp encoded, with extraData signatures removed
+	* @param header  					header rlp encoded, with extraData signatures removed
+	* @param prefixHeader			the new prefix for the signed hash header
+	* @param prefixExtraData	the new prefix for the extraData field
 	*/
 	function ExtractHash(bytes header, bytes prefixHeader, bytes prefixExtraData) public {
 		uint256 length = header.length;
