@@ -42,5 +42,6 @@ Notice that IPC has been used to attach to the nodes, this allows the clique mod
 ## Test
 After launching the network:
 ```
+$ npm install
 $ truffle test
 ```
