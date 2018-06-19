@@ -4,9 +4,10 @@ package cli
 
 import (
 	// "strings"
-	// "fmt"
+
+	"fmt"
 	"log"
-	// "strconv"
+	"strconv"
 
 	"github.com/abiosoft/ishell"
 	// "github.com/ethereum/go-ethereum/common"
@@ -31,7 +32,7 @@ const (
 type Bloom [BloomByteLength]byte
 
 type Block struct {
-    Number string
+	Number string
 }
 
 func Launch(setup config.Setup) {
@@ -67,12 +68,32 @@ func Launch(setup config.Setup) {
 		Help: "Gets specific block of Ethereum instance specified as from",
 		Func: func(c *ishell.Context) {
 			c.Println("===============================================================")
-			if len(c.Args) > 1 {
+			if len(c.Args) == 0 {
+				c.Println("Choose a block.")
+			} else if len(c.Args) > 1 {
 				c.Println("Too many arguments entered.")
 			} else {
-				block := c.Args[0]
-				c.Println("Get block " + block + " :")
+				block := strToHex(c.Args[0])
 				getBlock(client, block)
+			}
+			c.Println("===============================================================")
+		},
+	})
+
+	// Get block N
+	shell.AddCmd(&ishell.Cmd{
+		Name: "rlpEncodeBlock",
+		Help: "Gets specific block of Ethereum instance specified as from",
+		Func: func(c *ishell.Context) {
+			c.Println("===============================================================")
+			if len(c.Args) == 0 {
+				c.Println("Choose a block.")
+			} else if len(c.Args) > 1 {
+				c.Println("Too many arguments entered.")
+			} else {
+				block := strToHex(c.Args[0])
+				c.Println("RLP encode block: " + c.Args[0])
+				rlpEncodeBlock(client, block)
 			}
 			c.Println("===============================================================")
 		},
@@ -80,4 +101,16 @@ func Launch(setup config.Setup) {
 
 	// run shell
 	shell.Run()
+}
+
+func strToHex(input string) (output string) {
+	val, err := strconv.Atoi(input)
+	if err != nil {
+		fmt.Println("please input decimal:", err)
+		return
+	}
+
+	output = strconv.FormatInt(int64(val), 16)
+
+	return "0x" + output
 }

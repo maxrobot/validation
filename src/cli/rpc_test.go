@@ -22,7 +22,6 @@ func Test_EncodeBlock(t *testing.T) {
   marshalledBlock := cli.Header{}
 	json.Unmarshal(raw, &marshalledBlock)
 
-
 	// Now RLP encode the block
 	hash := cli.EncodeBlock(marshalledBlock)
 	assert.Equal(t, expectedRlpHex, hex.EncodeToString(hash))
