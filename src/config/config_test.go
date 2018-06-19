@@ -8,19 +8,17 @@ import (
 	"strings"
 	"testing"
 
-	"gitlab.clearmatics.net/dev/boe-poc/src/config"
+	"github.com/validation/src/config"
 )
 
-func Test_ParseParameters_ValidUserFile(t *testing.T) {
-	path := findPath() + "../user.json"
-	commandLine := []string{path}
+func Test_Read_ValidSetupJson(t *testing.T) {
+	path := findPath() + "../setup.json"
+	setup := config.Read(path)
 
-	setup := config.ParseParameters(commandLine)
-
-	assert.Equal(t, "http://rt-poc2-2.azurewebsites.net", setup.APIURL)
-	assert.Equal(t, "password", setup.Grant_type)
-	assert.Equal(t, "svcp93lXc&", setup.Password)
-	assert.Equal(t, "user1@scheme1.co.uk", setup.User)
+	assert.Equal(t, "8501", setup.Port_to)
+	assert.Equal(t, "127.0.0.1", setup.Addr_to)
+	assert.Equal(t, "8502", setup.Port_from)
+	assert.Equal(t, "127.0.0.1", setup.Addr_from)
 }
 
 func findPath() string {
