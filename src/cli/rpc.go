@@ -4,29 +4,31 @@ package cli
 
 import (
 	"fmt"
-	// "log"
+  "math/big"
 	"strconv"
+	"encoding/hex"
 
-	// "github.com/validation/src/config"
   "github.com/ethereum/go-ethereum/rpc"
+  "github.com/ethereum/go-ethereum/rlp"
+  "github.com/ethereum/go-ethereum/common"
 )
 
 type Header struct {
-    ParentHash string
-    UncleHash string
-    Coinbase string
-    Root string
-    TxHash string
-    ReceiptHash string
-    Bloom string
-    Difficulty string
-    Number string
-    GasLimit string
-    GasUsed string
-    Time string
-    ExtraData string
-    MixDigest string
-    Nonce string
+    ParentHash  common.Hash    `json:"parentHash"       gencodec:"required"`
+    UncleHash   common.Hash    `json:"sha3Uncles"       gencodec:"required"`
+    Coinbase    common.Address `json:"miner"            gencodec:"required"`
+    Root        common.Hash    `json:"stateRoot"        gencodec:"required"`
+    TxHash      common.Hash    `json:"transactionsRoot" gencodec:"required"`
+    ReceiptHash common.Hash    `json:"receiptsRoot"     gencodec:"required"`
+    Bloom       Bloom          `json:"logsBloom"        gencodec:"required"`
+    Difficulty  *big.Int       `json:"difficulty"       gencodec:"required"`
+    Number      *big.Int       `json:"number"           gencodec:"required"`
+    GasLimit    uint64         `json:"gasLimit"         gencodec:"required"`
+    GasUsed     uint64         `json:"gasUsed"          gencodec:"required"`
+    Time        *big.Int       `json:"timestamp"        gencodec:"required"`
+    Extra       string				 `json:"extraData"        gencodec:"required"`
+    MixDigest   common.Hash    `json:"mixHash"          gencodec:"required"`
+    Nonce       BlockNonce     `json:"nonce"            gencodec:"required"`
 }
 
 func latestBlock(client *rpc.Client) {
@@ -52,4 +54,34 @@ func getBlock(client *rpc.Client, block string) {
   } else {
   	fmt.Printf("%+v\n", blockHeader)
   }
+}
+
+func EncodeBlock(header Header) (h []byte) {
+	// Annoyingly we need to funk around with the extraData field
+	encodedExtraData, err := hex.DecodeString(header.Extra[2:])
+	if err != nil {
+	    panic(err)
+	}
+
+  x := []interface{}{
+    header.ParentHash,
+    header.UncleHash,
+    header.Coinbase,
+    header.Root,
+    header.TxHash,
+    header.ReceiptHash,
+    header.Bloom,
+    header.Difficulty,
+    header.Number,
+    header.GasLimit,
+    header.GasUsed,
+    header.Time,
+    encodedExtraData,
+    header.MixDigest,
+    header.Nonce,
+  }
+
+	h, _ = rlp.EncodeToBytes(x)
+
+  return h
 }
