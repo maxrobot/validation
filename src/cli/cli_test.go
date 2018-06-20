@@ -1,6 +1,6 @@
 // Copyright (c) 2018 Clearmatics Technologies Ltd
 
-package config_test
+package cli_test
 
 import (
 	"github.com/stretchr/testify/assert"

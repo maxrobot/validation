@@ -6,8 +6,8 @@ SHELL=/bin/bash
 clean:
 	@rm -f cli-tool
 
-#test:
-#	@go test ./... -v
+test:
+	@go test ./... -v
 
 format:
 	@gofmt -s -w ${GOFILES_NOVENDOR}
