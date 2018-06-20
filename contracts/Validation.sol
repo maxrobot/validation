@@ -13,18 +13,23 @@ contract Validation {
 
 	address[] validators;
 
+	mapping( address => bool ) m_validators;
+
+
+
 	/*
 	*	@param _validators			list of validators at block 0
 	*/
 	constructor (address[] _validators) public {
 		Owner = msg.sender;
 		for (uint i = 0; i < _validators.length; i++) {
-        validators.push(_validators[i]);
+			validators.push(_validators[i]);
+			m_validators[_validators[i]] = true;
     }
 	}
 
 	/*
-	*
+	* Returns the validators array
 	*/
 	function GetValidators() public view returns (address[] _validators) {
 		return validators;
@@ -68,6 +73,7 @@ contract Validation {
 		extractData(extraDataSig, header, length-107, extraDataSig.length);
 
 		address sig_addr = ECVerify.ecrecovery(hashData, extraDataSig);
+		/* require(m_validators[sig_addr]==true, "Signer not a validator!"); */
 
 		emit broadcastSig(sig_addr);
 
