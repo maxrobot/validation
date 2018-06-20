@@ -80,10 +80,10 @@ func Launch(setup config.Setup) {
 		},
 	})
 
-	// Get block N
+	// Get block N and spew out the RLP encoded block
 	shell.AddCmd(&ishell.Cmd{
 		Name: "rlpEncodeBlock",
-		Help: "Gets specific block of Ethereum instance specified as from",
+		Help: "Request RLP encoded block [N] of chain [from]",
 		Func: func(c *ishell.Context) {
 			c.Println("===============================================================")
 			if len(c.Args) == 0 {
@@ -94,6 +94,25 @@ func Launch(setup config.Setup) {
 				block := strToHex(c.Args[0])
 				c.Println("RLP encode block: " + c.Args[0])
 				rlpEncodeBlock(client, block)
+			}
+			c.Println("===============================================================")
+		},
+	})
+
+	// Get block N and spew out the RLP encoded block
+	shell.AddCmd(&ishell.Cmd{
+		Name: "getValidBlock",
+		Help: "Request block [N] from chain [from], calculates the prefixes required for submission to chain [to]",
+		Func: func(c *ishell.Context) {
+			c.Println("===============================================================")
+			if len(c.Args) == 0 {
+				c.Println("Choose a block.")
+			} else if len(c.Args) > 1 {
+				c.Println("Too many arguments entered.")
+			} else {
+				block := strToHex(c.Args[0])
+				c.Println("RLP encode block: " + c.Args[0])
+				calculateRlpEncoding(client, block)
 			}
 			c.Println("===============================================================")
 		},

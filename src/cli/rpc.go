@@ -3,14 +3,13 @@
 package cli
 
 import (
-	"fmt"
-	// "math/big"
 	"encoding/hex"
+	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
-	// "github.com/ethereum/go-ethereum/common"
 )
 
 type Header struct {
@@ -21,7 +20,7 @@ type Header struct {
 	TxHash      string `json:"transactionsRoot" gencodec:"required"`
 	ReceiptHash string `json:"receiptsRoot"     gencodec:"required"`
 	Bloom       string `json:"logsBloom"        gencodec:"required"`
-	Difficulty  string `json:"difficulty"		   gencodec:"required"`
+	Difficulty  string `json:"difficulty"		  	gencodec:"required"`
 	Number      string `json:"number"           gencodec:"required"`
 	GasLimit    string `json:"gasLimit"         gencodec:"required"`
 	GasUsed     string `json:"gasUsed"          gencodec:"required"`
@@ -62,49 +61,42 @@ func rlpEncodeBlock(client *rpc.Client, block string) {
 		fmt.Println("can't get requested block:", err)
 		return
 	} else {
-
-		encodedBlock := EncodeBlock(blockHeader)
-		fmt.Printf("%+v\n", encodedBlock)
+		blockInterface := generateInterface(blockHeader)
+		encodedBlock := EncodeBlock(blockInterface)
+		fmt.Printf("%+x\n", encodedBlock)
 	}
 }
 
-func EncodeBlock(header Header) (h []byte) {
-	// Annoyingly we need to funk around with the fields ugly for the time being
-	encParentHash, _ := hex.DecodeString(header.ParentHash[2:])
-	encUncleHash, _ := hex.DecodeString(header.UncleHash[2:])
-	encCoinbase, _ := hex.DecodeString(header.Coinbase[2:])
-	encRoot, _ := hex.DecodeString(header.Root[2:])
-	encTxHash, _ := hex.DecodeString(header.TxHash[2:])
-	encReceiptHash, _ := hex.DecodeString(header.ReceiptHash[2:])
-	encBloom, _ := hex.DecodeString(header.Bloom[2:])
-	encDifficulty, _ := hex.DecodeString(header.Difficulty[2:])
-	encNumber, _ := hex.DecodeString(header.Number[2:])
-	encGasLimit, _ := hex.DecodeString(header.GasLimit[2:])
-	encGasUsed, _ := hex.DecodeString(header.GasUsed[2:])
-	encTime, _ := hex.DecodeString(header.Time[2:])
-	encExtra, _ := hex.DecodeString(header.Extra[2:])
-	encMixDigest, _ := hex.DecodeString(header.MixDigest[2:])
-	encNonce, _ := hex.DecodeString(header.Nonce[2:])
+func calculateRlpEncoding(client *rpc.Client, block string) {
+	var blockHeader Header
+	err := client.Call(&blockHeader, "eth_getBlockByNumber", block, true)
+	if err != nil {
+		fmt.Println("can't get requested block:", err)
+		return
+	} else {
+		blockInterface := generateInterface(blockHeader)
+		encodedBlock := EncodeBlock(blockInterface)
+		fmt.Printf("%+x\n", encodedBlock)
+	}
+}
 
-	x := []interface{}{
-		encParentHash,
-		encUncleHash,
-		encCoinbase,
-		encRoot,
-		encTxHash,
-		encReceiptHash,
-		encBloom,
-		encDifficulty,
-		encNumber,
-		encGasLimit,
-		encGasUsed,
-		encTime,
-		encExtra,
-		encMixDigest,
-		encNonce,
+func generateInterface(blockHeader Header) (rest interface{}) {
+	blockInterface := []interface{}{}
+	s := reflect.ValueOf(&blockHeader).Elem()
+
+	// Append items into the interface
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i).String()
+		element, _ := hex.DecodeString(f[2:])
+		blockInterface = append(blockInterface, element)
 	}
 
-	h, _ = rlp.EncodeToBytes(x)
+	return blockInterface
+}
+
+func EncodeBlock(blockInterface interface{}) (h []byte) {
+	// Encode the block
+	h, _ = rlp.EncodeToBytes(blockInterface)
 
 	return h
 }

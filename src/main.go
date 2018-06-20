@@ -3,9 +3,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"flag"
 
 	"github.com/validation/src/cli"
 	"github.com/validation/src/config"
