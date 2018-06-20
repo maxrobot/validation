@@ -61,7 +61,7 @@ func rlpEncodeBlock(client *rpc.Client, block string) {
 		fmt.Println("can't get requested block:", err)
 		return
 	} else {
-		blockInterface := generateInterface(blockHeader)
+		blockInterface := GenerateInterface(blockHeader)
 		encodedBlock := EncodeBlock(blockInterface)
 		fmt.Printf("%+x\n", encodedBlock)
 	}
@@ -74,13 +74,25 @@ func calculateRlpEncoding(client *rpc.Client, block string) {
 		fmt.Println("can't get requested block:", err)
 		return
 	} else {
-		blockInterface := generateInterface(blockHeader)
+		// Generate an interface to encode the standard block header
+		blockInterface := GenerateInterface(blockHeader)
 		encodedBlock := EncodeBlock(blockInterface)
 		fmt.Printf("%+x\n", encodedBlock)
+
+		// Generate an interface to encode the blockheader without the signature in the extraData
+		blockHeader.Extra = blockHeader.Extra[:len(blockHeader.Extra)-130]
+		blockInterface = GenerateInterface(blockHeader)
+		encodedBlock = EncodeBlock(blockInterface)
+		fmt.Printf("\n%+x\n", encodedBlock[1:3])
+
+		// Generate an interface to encode the blockheader without the signature in the extraData
+		encExtra, _ := hex.DecodeString(blockHeader.Extra[2:])
+		encodedBlock = EncodeBlock(encExtra)
+		fmt.Printf("\n%+x\n", encodedBlock[0:1])
 	}
 }
 
-func generateInterface(blockHeader Header) (rest interface{}) {
+func GenerateInterface(blockHeader Header) (rest interface{}) {
 	blockInterface := []interface{}{}
 	s := reflect.ValueOf(&blockHeader).Elem()
 

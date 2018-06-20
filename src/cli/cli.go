@@ -3,33 +3,15 @@
 package cli
 
 import (
-	// "strings"
-
 	"fmt"
 	"log"
 	"strconv"
 
 	"github.com/abiosoft/ishell"
-	// "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
-	// "github.com/ethereum/go-ethereum/rlp"
-	// "github.com/ethereum/go-ethereum/crypto/sha3"
 
 	"github.com/validation/src/config"
 )
-
-type BlockNonce [8]byte
-
-const (
-	// BloomByteLength represents the number of bytes used in a header log bloom.
-	BloomByteLength = 256
-
-	// BloomBitLength represents the number of bits used in a header log bloom.
-	BloomBitLength = 8 * BloomByteLength
-)
-
-// Bloom represents a 2048 bit bloom filter.
-type Bloom [BloomByteLength]byte
 
 type Block struct {
 	Number string
@@ -99,7 +81,10 @@ func Launch(setup config.Setup) {
 		},
 	})
 
-	// Get block N and spew out the RLP encoded block
+	// Get block N, output three items:
+	// * RLP encoded blockHeader
+	// * Prefix for signed blockHeader
+	// * Prefix for extraData minus signatures
 	shell.AddCmd(&ishell.Cmd{
 		Name: "getValidBlock",
 		Help: "Request block [N] from chain [from], calculates the prefixes required for submission to chain [to]",
@@ -118,6 +103,24 @@ func Launch(setup config.Setup) {
 		},
 	})
 
+	// shell.AddCmd(&ishell.Cmd{
+	// 	Name: "submitSignedBlock",
+	// 	Help: "Request block [N] from chain [from], calculates the prefixes required for submission to chain [to]",
+	// 	Func: func(c *ishell.Context) {
+	// 		c.Println("===============================================================")
+	// 		if len(c.Args) == 0 {
+	// 			c.Println("Choose a block.")
+	// 		} else if len(c.Args) > 1 {
+	// 			c.Println("Too many arguments entered.")
+	// 		} else {
+	// 			block := strToHex(c.Args[0])
+	// 			c.Println("RLP encode block: " + c.Args[0])
+	// 			calculateRlpEncoding(client, block)
+	// 		}
+	// 		c.Println("===============================================================")
+	// 	},
+	// })
+
 	// run shell
 	shell.Run()
 }
@@ -128,7 +131,6 @@ func strToHex(input string) (output string) {
 		fmt.Println("please input decimal:", err)
 		return
 	}
-
 	output = strconv.FormatInt(int64(val), 16)
 
 	return "0x" + output
