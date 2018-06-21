@@ -164,14 +164,10 @@ contract.only('validation.js', (accounts) => {
 
     const ecrecoveryReceipt = await validation.ValidateBlock(encodedBlockHeader, prefixHeader, prefixExtraData);
     const recoveredBlockHash = ecrecoveryReceipt.logs[0].args['blockHash'];
-    const recoveredHash = ecrecoveryReceipt.logs[1].args['test'];
-    const recoveredSignature = ecrecoveryReceipt.logs[2].args['owner'];
+    const recoveredSignature = ecrecoveryReceipt.logs[1].args['owner'];
     assert.equal(block.hash, recoveredBlockHash)
     assert.equal(recoveredSignature, signer);
 
-    console.log("Signature Hash Solidity: \n", recoveredHash)
-    console.log("Signature Solidity: \n", extraDataSignature)
-    console.log("Signer Solidity: \n", recoveredSignature)
   })
 
   it.only('Test: Authentic Submission Off-Chain - ValidateBlock()', async () => {
@@ -240,42 +236,46 @@ contract.only('validation.js', (accounts) => {
     const addrBuf = Util.pubToAddress(pubKey);
     const addr    = Util.bufferToHex(addrBuf);
 
-    console.log(web3.eth.accounts[0],  addr);
+    const vPseudo = new Buffer(0);
+    const newSigBytes = Buffer.concat([sig.r, sig.s]);
+    const newSig = newSigBytes.toString('hex') + '00';
+
     // Append signature to the end of extraData
-    // const sigBytes = hexToBytes(sig);
-    // const newExtraDataBytes = extraBytesShort.concat(sigBytes);
-    // const newExtraData = '0x' + bytesToHex(newExtraDataBytes);
-    //
-    // const newBlockHeader = [
-    //   parentHash,
-    //   sha3Uncles,
-    //   coinbase,
-    //   root,
-    //   newTxHash,
-    //   receiptHash,
-    //   logsBloom,
-    //   difficulty,
-    //   number,
-    //   gasLimit,
-    //   gasUsed,
-    //   timestamp,
-    //   newExtraData,
-    //   mixHash,
-    //   nonce
-    // ];
-    //
-    // const encodedBlockHeader = '0x' + rlp.encode(newBlockHeader).toString('hex');
-    // const blockHeaderHash = Web3Utils.sha3(encodedBlockHeader);
-    //
-    // // The new prefixes should be calculated off chain
-    // const prefixHeader = '0x0214';
-    // const prefixExtraData = '0xa0';
-    //
-    // const ecrecoveryReceipt = await validation.ValidateBlock(encodedBlockHeader, prefixHeader, prefixExtraData);
-    // const recoveredBlockHash = ecrecoveryReceipt.logs[0].args['blockHash'];
-    // const recoveredSignature = ecrecoveryReceipt.logs[1].args['owner'];
-    // assert.equal(block.hash, recoveredBlockHash)
-    // assert.equal(recoveredSignature, signer);
+    const sigBytes = hexToBytes(newSig.toString('hex'));
+    const newExtraDataBytes = extraBytesShort.concat(sigBytes);
+    const newExtraData = '0x' + bytesToHex(newExtraDataBytes);
+
+    const newBlockHeader = [
+      parentHash,
+      sha3Uncles,
+      coinbase,
+      root,
+      txHash,
+      receiptHash,
+      logsBloom,
+      difficulty,
+      number,
+      gasLimit,
+      gasUsed,
+      timestamp,
+      newExtraData,
+      mixHash,
+      nonce
+    ];
+
+    const encodedBlockHeader = '0x' + rlp.encode(newBlockHeader).toString('hex');
+    const blockHeaderHash = Web3Utils.sha3(encodedBlockHeader);
+    assert.equal(block.hash, blockHeaderHash);
+
+    // The new prefixes should be calculated off chain
+    const prefixHeader = '0x0214';
+    const prefixExtraData = '0xa0';
+
+    const ecrecoveryReceipt = await validation.ValidateBlock(encodedBlockHeader, prefixHeader, prefixExtraData);
+    const recoveredBlockHash = ecrecoveryReceipt.logs[0].args['blockHash'];
+    const recoveredSignature = ecrecoveryReceipt.logs[1].args['owner'];
+    assert.equal(block.hash, recoveredBlockHash)
+    assert.equal(recoveredSignature, signer);
 
   })
 });

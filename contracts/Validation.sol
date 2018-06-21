@@ -10,7 +10,6 @@ contract Validation {
 	event broadcastSig(address owner);
 	event broadcastHashData(bytes header, bytes parentHash, bytes rootHash);
 	event broadcastHash(bytes32 blockHash);
-	event test(bytes32 test);
 
 	address[] validators;
 
@@ -69,7 +68,6 @@ contract Validation {
 		bytes memory newHeader = mergeHash(headerStart, extraData, headerEnd);
 
 		bytes32 hashData = keccak256(newHeader);
-		emit test(hashData);
 
 		// Extract the signature of the hash create above
 		extractData(extraDataSig, header, length-107, extraDataSig.length);
