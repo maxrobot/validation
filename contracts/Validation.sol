@@ -73,7 +73,7 @@ contract Validation {
 		extractData(extraDataSig, header, length-107, extraDataSig.length);
 
 		address sig_addr = ECVerify.ecrecovery(hashData, extraDataSig);
-		/* require(m_validators[sig_addr]==true, "Signer not a validator!"); */
+		require(m_validators[sig_addr]==true, "Signer not a validator!");
 
 		emit broadcastSig(sig_addr);
 
