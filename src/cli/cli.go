@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/abiosoft/ishell"
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/validation/src/config"
 )
@@ -25,16 +25,30 @@ func Launch(setup config.Setup) {
 	shell.Println("Block Validation CLI Tool")
 
 	// Connect to the RPC Client
-	client, err := rpc.Dial("http://" + setup.Addr_to + ":" + setup.Port_to)
+	client, err := ethclient.Dial("http://" + setup.Addr_to + ":" + setup.Port_to)
 	if err != nil {
 		log.Fatalf("could not create RPC client: %v", err)
 	} else {
 		shell.Println("Listening on RPC Client: " + setup.Addr_to + ":" + setup.Port_to)
 	}
 
+	// client, err := rpc.Dial("http://" + setup.Addr_to + ":" + setup.Port_to)
+	// if err != nil {
+	// 	log.Fatalf("could not create RPC client: %v", err)
+	// } else {
+	// 	shell.Println("Listening on RPC Client: " + setup.Addr_to + ":" + setup.Port_to)
+	// }
+
+	// // Initialise the contract
+	// address := common.HexToAddress("0xb9fd43a71c076f02d1dbbf473c389f0eacec559f")
+	// validation, err := Validation.NewValidation(address, clienteth)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
 	// Get the latest block number
 	shell.AddCmd(&ishell.Cmd{
-		Name: "getLatestBlock",
+		Name: "latestBlock",
 		Help: "Gets the latest block number of Ethereum instance specified as from",
 		Func: func(c *ishell.Context) {
 			c.Println("===============================================================")
@@ -55,7 +69,8 @@ func Launch(setup config.Setup) {
 			} else if len(c.Args) > 1 {
 				c.Println("Too many arguments entered.")
 			} else {
-				block := strToHex(c.Args[0])
+				// block := strToHex(c.Args[0])
+				block := c.Args[0]
 				getBlock(client, block)
 			}
 			c.Println("===============================================================")
@@ -73,7 +88,7 @@ func Launch(setup config.Setup) {
 			} else if len(c.Args) > 1 {
 				c.Println("Too many arguments entered.")
 			} else {
-				block := strToHex(c.Args[0])
+				block := c.Args[0]
 				c.Println("RLP encode block: " + c.Args[0])
 				rlpEncodeBlock(client, block)
 			}
@@ -95,7 +110,25 @@ func Launch(setup config.Setup) {
 			} else if len(c.Args) > 1 {
 				c.Println("Too many arguments entered.")
 			} else {
-				block := strToHex(c.Args[0])
+				block := c.Args[0]
+				c.Println("RLP encode block: " + c.Args[0])
+				calculateRlpEncoding(client, block)
+			}
+			c.Println("===============================================================")
+		},
+	})
+
+	shell.AddCmd(&ishell.Cmd{
+		Name: "getValidators",
+		Help: "Queries the validator contract for the whitelist of validators",
+		Func: func(c *ishell.Context) {
+			c.Println("===============================================================")
+			if len(c.Args) == 0 {
+				c.Println("Choose a block.")
+			} else if len(c.Args) > 1 {
+				c.Println("Too many arguments entered.")
+			} else {
+				block := c.Args[0]
 				c.Println("RLP encode block: " + c.Args[0])
 				calculateRlpEncoding(client, block)
 			}
@@ -113,7 +146,7 @@ func Launch(setup config.Setup) {
 			} else if len(c.Args) > 1 {
 				c.Println("Too many arguments entered.")
 			} else {
-				block := strToHex(c.Args[0])
+				block := c.Args[0]
 				c.Println("RLP encode block: " + c.Args[0])
 				calculateRlpEncoding(client, block)
 			}

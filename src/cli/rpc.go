@@ -3,13 +3,15 @@
 package cli
 
 import (
+	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"math/big"
 	"reflect"
-	"strconv"
 
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/ethereum/go-ethereum/rpc"
 )
 
 type Header struct {
@@ -30,47 +32,90 @@ type Header struct {
 	Nonce       string `json:"nonce"`
 }
 
-func latestBlock(client *rpc.Client) {
-	var lastBlock Block
-	err := client.Call(&lastBlock, "eth_getBlockByNumber", "latest", true)
+func latestBlock(client *ethclient.Client) {
+	// var lastBlock Block
+	lastBlock, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
 		fmt.Println("can't get latest block:", err)
 		return
 	}
 	// Print events from the subscription as they arrive.
-	k, _ := strconv.ParseInt(lastBlock.Number, 0, 64)
-	fmt.Printf("latest block: %v\n", k)
+	fmt.Printf("latest block: %v\n", lastBlock.Number)
 }
 
-func getBlock(client *rpc.Client, block string) {
-	var blockHeader Header
-	err := client.Call(&blockHeader, "eth_getBlockByNumber", block, true)
+func getBlock(client *ethclient.Client, block string) {
+	// var blockHeader Header
+	blockNum := new(big.Int)
+	blockNum.SetString(block, 10)
+
+	lastBlock, err := client.HeaderByNumber(context.Background(), blockNum)
 	if err != nil {
 		fmt.Println("can't get requested block:", err)
 		return
 	}
-	fmt.Printf("%+v\n", blockHeader)
+	// Marshal into a JSON
+	b, err := json.MarshalIndent(lastBlock, "", " ")
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+	fmt.Println("Block:", block)
+	fmt.Println(string(b))
 }
 
-func rlpEncodeBlock(client *rpc.Client, block string) {
+// func rlpEncodeBlock(client *rpc.Client, block string) {
+func rlpEncodeBlock(client *ethclient.Client, block string) {
 	var blockHeader Header
-	err := client.Call(&blockHeader, "eth_getBlockByNumber", block, true)
+	blockNum := new(big.Int)
+	blockNum.SetString(block, 10)
+
+	lastBlock, err := client.HeaderByNumber(context.Background(), blockNum)
 	if err != nil {
 		fmt.Println("can't get requested block:", err)
 		return
 	}
+
+	// Marshal into a JSON
+	b, err := json.MarshalIndent(lastBlock, "", " ")
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+	err = json.Unmarshal([]byte(b), &blockHeader)
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+
+	// fmt.Printf("%+v\n", blockHeader)
 	blockInterface := GenerateInterface(blockHeader)
 	encodedBlock := EncodeBlock(blockInterface)
 	fmt.Printf("%+x\n", encodedBlock)
 }
 
-func calculateRlpEncoding(client *rpc.Client, block string) {
+func calculateRlpEncoding(client *ethclient.Client, block string) {
 	var blockHeader Header
-	err := client.Call(&blockHeader, "eth_getBlockByNumber", block, true)
+	blockNum := new(big.Int)
+	blockNum.SetString(block, 10)
+
+	lastBlock, err := client.HeaderByNumber(context.Background(), blockNum)
 	if err != nil {
 		fmt.Println("can't get requested block:", err)
 		return
 	}
+
+	// Marshal into a JSON
+	b, err := json.MarshalIndent(lastBlock, "", " ")
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+	err = json.Unmarshal([]byte(b), &blockHeader)
+	if err != nil {
+		fmt.Printf("Error: %s", err)
+		return
+	}
+
 	// Generate an interface to encode the standard block header
 	blockInterface := GenerateInterface(blockHeader)
 	encodedBlock := EncodeBlock(blockInterface)
