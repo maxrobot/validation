@@ -19,7 +19,7 @@ coverage:
 		tail -n +2 coverage.out >> coverage-all.out;)
 	go tool cover -html=coverage-all.out
 
-run:
+build:
 	@go build -o cli-tool .
 
 check:

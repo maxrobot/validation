@@ -103,23 +103,23 @@ func Launch(setup config.Setup) {
 		},
 	})
 
-	// shell.AddCmd(&ishell.Cmd{
-	// 	Name: "submitSignedBlock",
-	// 	Help: "Request block [N] from chain [from], calculates the prefixes required for submission to chain [to]",
-	// 	Func: func(c *ishell.Context) {
-	// 		c.Println("===============================================================")
-	// 		if len(c.Args) == 0 {
-	// 			c.Println("Choose a block.")
-	// 		} else if len(c.Args) > 1 {
-	// 			c.Println("Too many arguments entered.")
-	// 		} else {
-	// 			block := strToHex(c.Args[0])
-	// 			c.Println("RLP encode block: " + c.Args[0])
-	// 			calculateRlpEncoding(client, block)
-	// 		}
-	// 		c.Println("===============================================================")
-	// 	},
-	// })
+	shell.AddCmd(&ishell.Cmd{
+		Name: "submitSignedBlock",
+		Help: "Request block [N] from chain [from], calculates the prefixes required for submission to chain [to]",
+		Func: func(c *ishell.Context) {
+			c.Println("===============================================================")
+			if len(c.Args) == 0 {
+				c.Println("Choose a block.")
+			} else if len(c.Args) > 1 {
+				c.Println("Too many arguments entered.")
+			} else {
+				block := strToHex(c.Args[0])
+				c.Println("RLP encode block: " + c.Args[0])
+				calculateRlpEncoding(client, block)
+			}
+			c.Println("===============================================================")
+		},
+	})
 
 	// run shell
 	shell.Run()
