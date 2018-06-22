@@ -8,8 +8,11 @@ import (
 	"strconv"
 
 	"github.com/abiosoft/ishell"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
+	"github.com/validation/src/Validation"
 	"github.com/validation/src/config"
 )
 
@@ -39,12 +42,12 @@ func Launch(setup config.Setup) {
 	// 	shell.Println("Listening on RPC Client: " + setup.Addr_to + ":" + setup.Port_to)
 	// }
 
-	// // Initialise the contract
-	// address := common.HexToAddress("0xb9fd43a71c076f02d1dbbf473c389f0eacec559f")
-	// validation, err := Validation.NewValidation(address, clienteth)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	// Initialise the contract
+	address := common.HexToAddress("0xb9fd43a71c076f02d1dbbf473c389f0eacec559f")
+	validation, err := Validation.NewValidation(address, client)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Get the latest block number
 	shell.AddCmd(&ishell.Cmd{
@@ -123,15 +126,14 @@ func Launch(setup config.Setup) {
 		Help: "Queries the validator contract for the whitelist of validators",
 		Func: func(c *ishell.Context) {
 			c.Println("===============================================================")
-			if len(c.Args) == 0 {
-				c.Println("Choose a block.")
-			} else if len(c.Args) > 1 {
-				c.Println("Too many arguments entered.")
-			} else {
-				block := c.Args[0]
-				c.Println("RLP encode block: " + c.Args[0])
-				calculateRlpEncoding(client, block)
+			result, err := validation.GetValidators(&bind.CallOpts{})
+			if err != nil {
+				fmt.Printf("Error: %s", err)
+				return
 			}
+			c.Println("Validators Whitelist:")
+			c.Printf("%x\n", result)
+
 			c.Println("===============================================================")
 		},
 	})
