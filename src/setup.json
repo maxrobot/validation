@@ -2,5 +2,6 @@
   "rpc-addr-to":"127.0.0.1",
   "rpc-port-to":"8501",
   "rpc-addr-from":"127.0.0.1",
-  "rpc-port-from":"8502"
+  "rpc-port-from":"8502",
+  "token-addr":"0xb9fd43a71c076f02d1dbbf473c389f0eacec559f"
 }

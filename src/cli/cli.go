@@ -16,10 +16,7 @@ import (
 	"github.com/validation/src/config"
 )
 
-type Block struct {
-	Number string
-}
-
+// Launch - definition of commands and creates the iterface
 func Launch(setup config.Setup) {
 	// by default, new shell includes 'exit', 'help' and 'clear' commands.
 	shell := ishell.New()
@@ -28,22 +25,16 @@ func Launch(setup config.Setup) {
 	shell.Println("Block Validation CLI Tool")
 
 	// Connect to the RPC Client
-	client, err := ethclient.Dial("http://" + setup.Addr_to + ":" + setup.Port_to)
+	client, err := ethclient.Dial("http://" + setup.AddrTo + ":" + setup.PortTo)
 	if err != nil {
 		log.Fatalf("could not create RPC client: %v", err)
 	} else {
-		shell.Println("Listening on RPC Client: " + setup.Addr_to + ":" + setup.Port_to)
+		shell.Println("Listening on RPC Client: " + setup.AddrTo + ":" + setup.PortTo)
 	}
 
-	// client, err := rpc.Dial("http://" + setup.Addr_to + ":" + setup.Port_to)
-	// if err != nil {
-	// 	log.Fatalf("could not create RPC client: %v", err)
-	// } else {
-	// 	shell.Println("Listening on RPC Client: " + setup.Addr_to + ":" + setup.Port_to)
-	// }
-
 	// Initialise the contract
-	address := common.HexToAddress("0xb9fd43a71c076f02d1dbbf473c389f0eacec559f")
+	address := common.HexToAddress(setup.Token)
+	fmt.Println(setup.Token)
 	validation, err := Validation.NewValidation(address, client)
 	if err != nil {
 		log.Fatal(err)
@@ -52,7 +43,7 @@ func Launch(setup config.Setup) {
 	// Get the latest block number
 	shell.AddCmd(&ishell.Cmd{
 		Name: "latestBlock",
-		Help: "Gets the latest block number of Ethereum instance specified as from",
+		Help: "Returns latest block number, arguments: latestBlock",
 		Func: func(c *ishell.Context) {
 			c.Println("===============================================================")
 			c.Println("Get latest block number:")
@@ -64,58 +55,15 @@ func Launch(setup config.Setup) {
 	// Get block N
 	shell.AddCmd(&ishell.Cmd{
 		Name: "getBlock",
-		Help: "Gets specific block of Ethereum instance specified as from",
+		Help: "Returns a block header, arguments: getBlock [integer]",
 		Func: func(c *ishell.Context) {
 			c.Println("===============================================================")
 			if len(c.Args) == 0 {
-				c.Println("Choose a block.")
+				c.Println("Input argument required, e.g.: getBlock 10")
 			} else if len(c.Args) > 1 {
-				c.Println("Too many arguments entered.")
+				c.Println("Only enter single argument")
 			} else {
-				// block := strToHex(c.Args[0])
-				block := c.Args[0]
-				getBlock(client, block)
-			}
-			c.Println("===============================================================")
-		},
-	})
-
-	// Get block N and spew out the RLP encoded block
-	shell.AddCmd(&ishell.Cmd{
-		Name: "rlpEncodeBlock",
-		Help: "Request RLP encoded block [N] of chain [from]",
-		Func: func(c *ishell.Context) {
-			c.Println("===============================================================")
-			if len(c.Args) == 0 {
-				c.Println("Choose a block.")
-			} else if len(c.Args) > 1 {
-				c.Println("Too many arguments entered.")
-			} else {
-				block := c.Args[0]
-				c.Println("RLP encode block: " + c.Args[0])
-				rlpEncodeBlock(client, block)
-			}
-			c.Println("===============================================================")
-		},
-	})
-
-	// Get block N, output three items:
-	// * RLP encoded blockHeader
-	// * Prefix for signed blockHeader
-	// * Prefix for extraData minus signatures
-	shell.AddCmd(&ishell.Cmd{
-		Name: "getValidBlock",
-		Help: "Request block [N] from chain [from], calculates the prefixes required for submission to chain [to]",
-		Func: func(c *ishell.Context) {
-			c.Println("===============================================================")
-			if len(c.Args) == 0 {
-				c.Println("Choose a block.")
-			} else if len(c.Args) > 1 {
-				c.Println("Too many arguments entered.")
-			} else {
-				block := c.Args[0]
-				c.Println("RLP encode block: " + c.Args[0])
-				calculateRlpEncoding(client, block)
+				getBlock(client, c.Args[0])
 			}
 			c.Println("===============================================================")
 		},
@@ -138,9 +86,27 @@ func Launch(setup config.Setup) {
 		},
 	})
 
+	// Get block N and spew out the RLP encoded block
 	shell.AddCmd(&ishell.Cmd{
-		Name: "submitSignedBlock",
-		Help: "Request block [N] from chain [from], calculates the prefixes required for submission to chain [to]",
+		Name: "rlpBlock",
+		Help: "Returns RLP encoded block header, arguments: rlpBlock [integer]",
+		Func: func(c *ishell.Context) {
+			c.Println("===============================================================")
+			if len(c.Args) == 0 {
+				c.Println("Input argument required, e.g.: rlpBlock 10")
+			} else if len(c.Args) > 1 {
+				c.Println("Only enter single argument")
+			} else {
+				c.Println("RLP encode block: " + c.Args[0])
+				rlpEncodeBlock(client, c.Args[0])
+			}
+			c.Println("===============================================================")
+		},
+	})
+
+	shell.AddCmd(&ishell.Cmd{
+		Name: "submitRlpBlock",
+		Help: "Returns the RLP block header, signed block prefix, extra data prefix and submits to validation contract, arguments: submitRlpBlock [integer]",
 		Func: func(c *ishell.Context) {
 			c.Println("===============================================================")
 			if len(c.Args) == 0 {
@@ -148,9 +114,13 @@ func Launch(setup config.Setup) {
 			} else if len(c.Args) > 1 {
 				c.Println("Too many arguments entered.")
 			} else {
-				block := c.Args[0]
 				c.Println("RLP encode block: " + c.Args[0])
-				calculateRlpEncoding(client, block)
+				encodedBlock, prefixBlock, prefixExtra := calculateRlpEncoding(client, c.Args[0])
+				res, err := validation.ValidateBlock(&bind.TransactOpts{}, encodedBlock, prefixBlock, prefixExtra)
+				if err != nil {
+					c.Printf("Error: %s", err)
+					return
+				}
 			}
 			c.Println("===============================================================")
 		},

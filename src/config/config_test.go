@@ -2,11 +2,11 @@
 
 package config_test
 
-import (
-	"github.com/stretchr/testify/assert"
-	"runtime"
+import F	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/validation/src/config"
 )
@@ -15,10 +15,11 @@ func Test_Read_ValidSetupJson(t *testing.T) {
 	path := findPath() + "../setup.json"
 	setup := config.Read(path)
 
-	assert.Equal(t, "8501", setup.Port_to)
-	assert.Equal(t, "127.0.0.1", setup.Addr_to)
-	assert.Equal(t, "8502", setup.Port_from)
-	assert.Equal(t, "127.0.0.1", setup.Addr_from)
+	assert.Equal(t, "8501", setup.PortTo)
+	assert.Equal(t, "127.0.0.1", setup.AddrTo)
+	assert.Equal(t, "8502", setup.PortFrom)
+	assert.Equal(t, "127.0.0.1", setup.AddrFrom)
+	assert.Equal(t, "0xb9fd43a71c076f02d1dbbf473c389f0eacec559f", setup.Token)
 }
 
 func findPath() string {

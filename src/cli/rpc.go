@@ -93,7 +93,8 @@ func rlpEncodeBlock(client *ethclient.Client, block string) {
 	fmt.Printf("%+x\n", encodedBlock)
 }
 
-func calculateRlpEncoding(client *ethclient.Client, block string) {
+// func calculateRlpEncoding(client *ethclient.Client, block string) {
+func calculateRlpEncoding(client *ethclient.Client, block string) (rlpBlock []byte, prefixBlock []byte, prefixExtra []byte) {
 	var blockHeader Header
 	blockNum := new(big.Int)
 	blockNum.SetString(block, 10)
@@ -119,18 +120,22 @@ func calculateRlpEncoding(client *ethclient.Client, block string) {
 	// Generate an interface to encode the standard block header
 	blockInterface := GenerateInterface(blockHeader)
 	encodedBlock := EncodeBlock(blockInterface)
-	fmt.Printf("%+x\n", encodedBlock)
+	fmt.Printf("\n%+x\n", encodedBlock)
 
 	// Generate an interface to encode the blockheader without the signature in the extraData
 	blockHeader.Extra = blockHeader.Extra[:len(blockHeader.Extra)-130]
 	blockInterface = GenerateInterface(blockHeader)
 	encodedBlock = EncodeBlock(blockInterface)
-	fmt.Printf("\n%+x\n", encodedBlock[1:3])
+	prefixBlock = encodedBlock[1:3]
+	fmt.Printf("\n%+x\n", prefixBlock)
 
 	// Generate an interface to encode the blockheader without the signature in the extraData
 	encExtra, _ := hex.DecodeString(blockHeader.Extra[2:])
 	encodedBlock = EncodeBlock(encExtra)
-	fmt.Printf("\n%+x\n", encodedBlock[0:1])
+	prefixExtra = encodedBlock[0:1]
+	fmt.Printf("\n%+x\n", prefixExtra)
+
+	return encodedBlock, prefixBlock, prefixExtra
 
 }
 

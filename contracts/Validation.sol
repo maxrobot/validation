@@ -13,9 +13,12 @@ contract Validation {
 
 	address[] validators;
 
+	struct BlockHeader {
+		bytes32 prevBlockHash;
+	}
+
+	mapping (bytes32 => BlockHeader) public m_blockheaders;
 	mapping( address => bool ) m_validators;
-
-
 
 	/*
 	*	@param _validators			list of validators at block 0
