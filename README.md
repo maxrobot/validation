@@ -1,7 +1,7 @@
 # Block Validation Scheme
 Block validation scheme is a set of smart contract which aim to be able to ensure that block headers submitted to the contract are sealed by an approved partie(s). The motivation behind this is to update the state of a Clique PoA or Istanbul PBFT chain onto any other blockchain. To do this we first need to know which blocks are valid - dependent on the definition of a valid by the underlying consensus algorithm.
 
-At this stage a Clique PoA chain is launched and then the block headers updated to the smart contract which is deployed on itself. However in the near future this will be extended to update the Clique header onto any other chain. For a full description and roadmap of the project please refer to the Clearmatics (Ion-Stage-2 Wiki)[https://github.com/clearmatics/ion/wiki/Ion-Stage-2---Proposal#validation].
+At this stage a Clique PoA chain is launched and then the block headers updated to the smart contract which is deployed on itself. However in the near future this will be extended to update the Clique header onto any other chain. For a full description and roadmap of the project please refer to the Clearmatics [Ion-Stage-2 Wiki](https://github.com/clearmatics/ion/wiki/Ion-Stage-2---Proposal#validation).
 
 ## Running the Project
 This project contains a number of components:
