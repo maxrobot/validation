@@ -29,53 +29,12 @@ function bytesToHex(bytes) {
     return hex.join("");
 }
 
-contract.only('validation.js', (accounts) => {
+contract('validation.js', (accounts) => {
   const joinHex = arr => '0x' + arr.map(el => el.slice(2)).join('');
 
   const watchEvent = (eventObj) => new Promise((resolve,reject) => eventObj.watch((error,event) => error ? reject(error) : resolve(event)));
 
   const validators = ["0x2be5ab0e43b6dc2908d5321cf318f35b80d0c10d", "0x8671e5e08d74f338ee1c462340842346d797afd3"];
-
-  it('Test: Recover', async () => {
-    const recover = await Recover.new();
-    // const getOwnerReceipt = await recover.GetOwner();
-
-    const signer = accounts[0];
-
-    const hashData = Web3Utils.sha3("Test Data");
-
-    console.log(Web3Utils.sha3("Test Data"))
-    console.log(bytesToHex(Util.sha3("Test Data")))
-    // const sig = web3.eth.sign(signer, Web3Utils.sha3("\x19Ethereum Signed Message:\n" + hashData.length +  hashData));
-
-    const sig = web3.eth.sign(signer, hashData);
-    const newSig = Util.fromRpcSig(sig);
-    const ecrecover = Util.ecrecover(hashData, newSig.v, newSig.r, newSig.s);
-    console.log(ecrecover)
-    // const prefixHashData = Web3Utils.sha3("\x19Ethereum Signed Message:\n" + hashData.length +  hashData)
-    //
-    // const ecrecoveryReceipt = await recover.VerifyHash(prefixHashData, sig);
-    // const ecrecoveryExpected = ecrecoveryReceipt.logs[0].args['owner'];
-    // assert.equal(ecrecoveryExpected, signer);
-  })
-
-  it('Test: Recover', async () => {
-    const recover = await Recover.new();
-    // const getOwnerReceipt = await recover.GetOwner();
-
-    const signer = accounts[0];
-
-    const hashData = Web3Utils.sha3("Test Data");
-
-    // const sig = web3.eth.sign(signer, Web3Utils.sha3("\x19Ethereum Signed Message:\n" + hashData.length +  hashData));
-
-    const sig = web3.eth.sign(signer, hashData);
-    const prefixHashData = Web3Utils.sha3("\x19Ethereum Signed Message:\n" + hashData.length +  hashData)
-
-    const ecrecoveryReceipt = await recover.VerifyHash(prefixHashData, sig);
-    const ecrecoveryExpected = ecrecoveryReceipt.logs[0].args['owner'];
-    assert.equal(ecrecoveryExpected, signer);
-  })
 
   it('Test: GetValidators()', async () => {
     const validation = await Validation.new(validators);
@@ -386,7 +345,7 @@ contract.only('validation.js', (accounts) => {
     assert.equal(recoveredSignature, signer);
   })
 
-  it.only('Test: Authentic Block Unkown Validator Submission - ValidateBlock()', async () => {
+  it('Test: Authentic Block Unkown Validator Submission - ValidateBlock()', async () => {
     const validation = await Validation.new(validators);
     const accounts = web3.eth.accounts;
     const signer = accounts[0];

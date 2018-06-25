@@ -10,11 +10,13 @@ import (
 
 // Settings
 type Setup struct {
-	PortTo   string `json:"rpc-port-to"`
-	AddrTo   string `json:"rpc-addr-to"`
-	PortFrom string `json:"rpc-port-from"`
-	AddrFrom string `json:"rpc-addr-from"`
-	Token    string `json:"token-addr"`
+	PortTo      string `json:"rpc-port-to"`
+	AddrTo      string `json:"rpc-addr-to"`
+	AccountTo   string `json:"account-to"`
+	PortFrom    string `json:"rpc-port-from"`
+	AddrFrom    string `json:"rpc-addr-from"`
+	AccountFrom string `json:"account-from"`
+	Ion         string `json:"ion-addr"`
 }
 
 func Read(config string) (setup Setup) {

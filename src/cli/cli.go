@@ -21,24 +21,20 @@ func Launch(setup config.Setup) {
 	// by default, new shell includes 'exit', 'help' and 'clear' commands.
 	shell := ishell.New()
 
-	// display welcome info.
-	shell.Println("Block Validation CLI Tool")
-
 	// Connect to the RPC Client
 	client, err := ethclient.Dial("http://" + setup.AddrTo + ":" + setup.PortTo)
 	if err != nil {
 		log.Fatalf("could not create RPC client: %v", err)
-	} else {
-		shell.Println("Listening on RPC Client: " + setup.AddrTo + ":" + setup.PortTo)
 	}
 
 	// Initialise the contract
-	address := common.HexToAddress(setup.Token)
-	fmt.Println(setup.Token)
+	address := common.HexToAddress(setup.Ion)
 	validation, err := Validation.NewValidation(address, client)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	printInfo(setup)
 
 	// Get the latest block number
 	shell.AddCmd(&ishell.Cmd{
@@ -121,6 +117,7 @@ func Launch(setup config.Setup) {
 					c.Printf("Error: %s", err)
 					return
 				}
+				c.Printf("Error: %s", res)
 			}
 			c.Println("===============================================================")
 		},
@@ -128,6 +125,20 @@ func Launch(setup config.Setup) {
 
 	// run shell
 	shell.Run()
+}
+
+func printInfo(setup config.Setup) {
+	// display welcome info.
+	fmt.Println("===============================================================")
+	fmt.Println("Ion Command Line Interface\n")
+	fmt.Println("RPC Client [to]:")
+	fmt.Println("Listening on: " + setup.AddrTo + ":" + setup.PortTo)
+	fmt.Println("User Account: " + setup.AccountTo)
+	fmt.Println("Ion Contract: " + setup.Ion)
+	fmt.Println("\nRPC Client [from]: ")
+	fmt.Println("Listening on: " + setup.AddrFrom + ":" + setup.PortFrom)
+	fmt.Println("User Account: " + setup.AccountFrom)
+	fmt.Println("===============================================================")
 }
 
 func strToHex(input string) (output string) {

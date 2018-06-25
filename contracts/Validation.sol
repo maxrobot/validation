@@ -28,7 +28,7 @@ contract Validation {
 		for (uint i = 0; i < _validators.length; i++) {
 			validators.push(_validators[i]);
 			m_validators[_validators[i]] = true;
-    }
+    	}	
 	}
 
 	/*
@@ -58,7 +58,7 @@ contract Validation {
 		extractData(headerStart, header, 0, headerStart.length);
 		assembly {
            let ret := staticcall(3000, 4, add(prefixHeader, 32), 2, add(headerStart, 33), 2)
-    }
+	    }
 
 		// Extract the real extra data and create the signed hash
 		extractData(extraData, header, length-140, extraData.length);

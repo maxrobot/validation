@@ -86,3 +86,37 @@ After launching the network, from the root of the repository:
 $ npm install
 $ truffle test
 ```
+
+### Ion Command Line Interface
+The Ion CLI is a tool for handling the passing of block headers between to blockchains written in Golang to leverage the extensive ethereum libraries. It is not a critical part of the Ion infrastructure rather is just an open utility that people can extend and use as they see fit.
+
+In its current form the Ion CLI allows the user to connect to two separate blockchains, via RPC, and submit block headers to a validation contract.
+
+#### Running the CLI
+As mentioned in the project description this simple implementation of the validation contract is active only on a single blockchain, however the CLI is simulating the passing of the headers to and from as if it were between separate chains.
+
+Having followed the instructions on how to setup a Clique blockchain, which is hosted on `127.0.0.1:8502`, and running another chain on `127.0.0.1:8501` we can attach the CLI.
+
+```
+$ cd /path/to/validation/src
+$ make build
+```
+Assuming a successful build the tool can be run,
+```
+$ ./ion-cli [/path/to/setup.json]
+===============================================================
+Ion Command Line Interface
+
+RPC Client [to]:
+Listening on: 127.0.0.1:8501
+User Account: 0x2be5ab0e43b6dc2908d5321cf318f35b80d0c10d
+Ion Contract: 0xb9fd43a71c076f02d1dbbf473c389f0eacec559f
+
+RPC Client [from]: 
+Listening on: 127.0.0.1:8502
+User Account: 0x8671e5e08d74f338ee1c462340842346d797afd3
+===============================================================
+>>>
+```
+
+
