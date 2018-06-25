@@ -4,10 +4,10 @@ PACKAGES = $(shell find ./ -type d -not -path "./vendor" -not -path "./vendor/*"
 SHELL=/bin/bash
 
 clean:
-	@rm -f cli-tool
+	@rm -f ion-cli
 
-#test:
-#	@go test ./... -v
+test:
+	@go test ./... -v
 
 format:
 	@gofmt -s -w ${GOFILES_NOVENDOR}
@@ -19,8 +19,8 @@ coverage:
 		tail -n +2 coverage.out >> coverage-all.out;)
 	go tool cover -html=coverage-all.out
 
-run:
-	@go build -o cli-tool .
+build:
+	@go build -o ion-cli .
 
 check:
 	@if [ -n "$(shell gofmt -l ${GOFILES_NOVENDOR})" ]; then \

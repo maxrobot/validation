@@ -3,22 +3,24 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"flag"
 
 	"github.com/validation/src/cli"
 	"github.com/validation/src/config"
 )
 
-var configFile = flag.String("config", "", "Description:\n path to the configuration file")
+var configFile = flag.String("config", "setup.json", "Description:\n path to the configuration file")
 
 func main() {
 	flag.Parse()
 
 	if *configFile != "" {
 		setup := config.Read(*configFile)
-		cli.Launch()
+
+		// Launch the CLI
+		cli.Launch(setup)
 	} else {
 		fmt.Print("Error: empty config!\n")
 		os.Exit(3)
